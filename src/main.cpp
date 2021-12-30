@@ -3,30 +3,29 @@
 #include <IRremote.h>
 
 int sendPin=3;
-bool LEDFeedback = true;
+int buttonPin=10;
 
-IRsend irsend(sendPin);
-IRData ON{};
-IRData OFF{};
+//turn on main light
+IRsend irsend_main_on;
+IRData irdata_main_on{LG, 0x88, 0xC005, 0, 0x1C, 0x80, 0x88C051, nullptr};
+
+//turn off main light
+IRsend main_off;
+IRData irdata_main_off;
 
 void setup() {
   Serial.begin(9600);
-  //IRremote set
-  irsend.begin(LEDFeedback);
-  irsend.enableIROut(30);
-  ON.protocol=LG;
-  ON.command=0x880628;
-  OFF.protocol=LG;
-  OFF.command=0x88C0051;
-  //pinMode set
-  pinMode(10, INPUT);
+  pinMode(buttonPin, INPUT);
+  //IRSend set
+  irsend_main_on.begin(sendPin, false);
+  irsend_main_on.write(&irdata_main_on);
+  irsend_main_on.enableIROut(38);
 }
 
 void loop() {
-  if(digitalRead(10)==HIGH){
-    irsend.send
-    Serial.print("signal");
+  if(digitalRead(buttonPin)==HIGH){
+    irsend_main_on.sendLG(irdata_main_on.address, irdata_main_on.command, 0);
+    Serial.print("turn on\n");
     delay(500);
   }
-  digitalWrite(sendPin, LOW);
 }
