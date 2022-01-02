@@ -1,31 +1,37 @@
-//remote controller
+//Sender
 #include <Arduino.h>
-#include <IRremote.h>
+#include <SPI.h>
+#include <RF24.h>
+#include <nRF24L01.h>
 
-int sendPin=3;
-int buttonPin=10;
-
-//turn on main light
-IRsend irsend_main_on;
-IRData irdata_main_on{LG, 0x88, 0xC005, 0, 0x1C, 0x80, 0x88C051, nullptr};
-
-//turn off main light
-IRsend main_off;
-IRData irdata_main_off;
+//RF module
+RF24 radio(9,10);
+const byte address[6]="00001"; //Address value must be same in sender and receiver
+//button & led
+int button_pin=2;
+int led_pin=3;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(buttonPin, INPUT);
-  //IRSend set
-  irsend_main_on.begin(sendPin, false);
-  irsend_main_on.write(&irdata_main_on);
-  irsend_main_on.enableIROut(38);
+  radio.begin();
+  //RF module
+  radio.openWritingPipe(address); //Set where to send data.
+  radio.setPALevel(RF24_PA_MIN); //Set powerlevel.
+  radio.stopListening(); //Set this module as sender.
+  //button & led
+  pinMode(button_pin, INPUT);
+  pinMode(led_pin, OUTPUT);
 }
 
 void loop() {
-  if(digitalRead(buttonPin)==HIGH){
-    irsend_main_on.sendLG(irdata_main_on.address, irdata_main_on.command, 0);
-    Serial.print("turn on\n");
-    delay(500);
+  if(digitalRead(button_pin)==HIGH){
+    digitalWrite(led_pin, HIGH);
+    const char msg[]="hello world";
+    Serial.println("before send");
+    radio.write(&msg, sizeof(msg));
+    Serial.println(msg);
+    delay(1000);
   }
+  else
+    digitalWrite(led_pin, LOW);
 }
