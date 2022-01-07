@@ -4,12 +4,15 @@
 #include <RF24.h>
 #include <nRF24L01.h>
 
+#define ON "on"//right
+#define OFF "off"//left
+
 //RF module
 RF24 radio(9,10);
 const byte address[6]="00001"; //Address value must be same in sender and receiver
-//button & led
-int button_pin=2;
-int led_pin=3;
+//buttons
+int button_on=3;
+int button_off=4;
 
 void setup() {
   Serial.begin(9600);
@@ -19,19 +22,25 @@ void setup() {
   radio.setPALevel(RF24_PA_MIN); //Set powerlevel.
   radio.stopListening(); //Set this module as sender.
   //button & led
-  pinMode(button_pin, INPUT);
-  pinMode(led_pin, OUTPUT);
+  pinMode(button_on, INPUT);
+  pinMode(button_off, INPUT);
 }
 
 void loop() {
-  if(digitalRead(button_pin)==HIGH){
-    digitalWrite(led_pin, HIGH);
-    const char msg[]="hello world";
-    Serial.println("before send");
-    radio.write(&msg, sizeof(msg));
-    Serial.println(msg);
-    delay(1000);
+  const char signal[]="";
+  if(digitalRead(button_on)==HIGH){
+    const char signal[]="on";
+    radio.write(&signal, sizeof(signal));
+    Serial.println(signal);
+    delay(500);
   }
-  else
-    digitalWrite(led_pin, LOW);
+  else if(digitalRead(button_off)==HIGH){
+    const char signal[]="off";
+    radio.write(&signal, sizeof(signal));
+    Serial.println(signal);
+    delay(500);
+  }
+  else{
+    Serial.println("waiting...");
+  }
 }
